@@ -30,4 +30,14 @@ public class Expense {
 
     // memo function good  to later tax
     private String note;
+
+    public void update(String description, Double amount, LocalDate date, String category, String note) {
+        this.description = description;
+        this.amount = amount;
+        this.date = date;
+        this.category = category;
+        this.note = note;
+    }
 }
+
+
