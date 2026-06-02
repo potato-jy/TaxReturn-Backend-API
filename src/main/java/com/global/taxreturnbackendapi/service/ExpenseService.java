@@ -1,10 +1,11 @@
-package com.global.taxreturnbackendapi.serivce;
+package com.global.taxreturnbackendapi.service;
 
 import com.global.taxreturnbackendapi.DTO.ExpenseRequestDto;
 import com.global.taxreturnbackendapi.DTO.ExpenseResponseDto;
 import com.global.taxreturnbackendapi.entity.Expense;
 import com.global.taxreturnbackendapi.repository.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
@@ -42,6 +44,33 @@ public class ExpenseService {
                 .sum();
     }
 
+    /**
+     * Calculation of estimated tax refund applying category-specific deduction rates
+     * (amount spent * Deduction rate by category) * basic tax rate(30%)
+     */
+    public Double calculateExpectedRefund() {
+        double baseTaxRate = 0.30; // Assuming an average Australian tax rate of 30%
+
+        double totalDeduction = expenseRepository.findAll().stream()
+                .mapToDouble(expense -> {
+                    double amount = expense.getAmount();
+                    String category = expense.getCategory().toUpperCase();
+                    log.debug("현재 도는 데이터 카테고리: {}", expense.getCategory());
+                    switch (category) {
+                        case "WORK":
+                            return amount * 1.0;  // 100%
+                        case "TRAVEL":
+                            return amount * 0.8;  // 80%
+                        case "EDUCATION":
+                            return amount * 0.7;  // 70%
+                        default:
+                            return amount * 0.5;  // 50%
+                    }
+                })
+                .sum();
+        return totalDeduction * baseTaxRate;
+    }
+
     private ExpenseResponseDto getExpenseResponseDto(Expense expense) {
         return ExpenseResponseDto.builder()
                 .id(expense.getId())
@@ -64,7 +93,6 @@ public class ExpenseService {
                 requestDto.getCategory(),
                 requestDto.getNote()
         );
-
         return getExpenseResponseDto(expense);
     }
 

@@ -2,15 +2,15 @@ package com.global.taxreturnbackendapi.controller;
 
 import com.global.taxreturnbackendapi.DTO.ExpenseRequestDto;
 import com.global.taxreturnbackendapi.DTO.ExpenseResponseDto;
-import com.global.taxreturnbackendapi.entity.Expense;
-import com.global.taxreturnbackendapi.repository.ExpenseRepository;
-import com.global.taxreturnbackendapi.serivce.ExpenseService;
+import com.global.taxreturnbackendapi.service.ExpenseService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Expense API", description = "Expense CRUD API")
 @RestController
 @RequestMapping("/api/expenses")
 @RequiredArgsConstructor
@@ -47,5 +47,11 @@ public class ExpenseController {
     public String deleteExpense(@PathVariable Long id) {
         expenseService.deleteExpense(id);
         return "deleted expense history successfully. ID: " + id;
+    }
+
+    @Operation(summary = "Check Estimated Tax Refund", description = "Calculate the estimated refund by applying the category-specific deduction rate and tax rate (30%) of the saved expenses..")
+    @GetMapping("/expected-refund")
+    public Double getExpectedRefund() {
+        return expenseService.calculateExpectedRefund();
     }
 }
