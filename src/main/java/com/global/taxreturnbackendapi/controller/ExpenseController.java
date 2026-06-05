@@ -5,6 +5,7 @@ import com.global.taxreturnbackendapi.DTO.ExpenseResponseDto;
 import com.global.taxreturnbackendapi.service.ExpenseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,7 @@ public class ExpenseController {
 
     @Operation(summary = "Expense history save", description = "Saves work-related expense details")
     @PostMapping
-    public ExpenseResponseDto createExpense(@RequestBody ExpenseRequestDto expenseRequestDto) {
+    public ExpenseResponseDto createExpense(@Valid @RequestBody ExpenseRequestDto expenseRequestDto) {
         return expenseService.saveExpense(expenseRequestDto);
     }
 
@@ -38,7 +39,7 @@ public class ExpenseController {
 
     @Operation(summary = "edit expense details", description = "edit previsouly saved expense details")
     @PutMapping("/{id}")
-    public ExpenseResponseDto updateExpense(@PathVariable Long id, @RequestBody ExpenseRequestDto updateDto) {
+    public ExpenseResponseDto updateExpense(@PathVariable Long id, @Valid @RequestBody ExpenseRequestDto updateDto) {
         return expenseService.updateExpense(id, updateDto);
     }
 

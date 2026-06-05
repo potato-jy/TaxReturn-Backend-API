@@ -5,6 +5,7 @@ import com.global.taxreturnbackendapi.DTO.IncomeResponseDto;
 import com.global.taxreturnbackendapi.service.IncomeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,7 @@ public class IncomeController {
 
     @Operation(summary = "Register your income details")
     @PostMapping
-    public IncomeResponseDto createIncome(@RequestBody IncomeRequestDto requestDto) {
+    public IncomeResponseDto createIncome(@Valid  @RequestBody IncomeRequestDto requestDto) {
         return incomeService.createIncome(requestDto);
     }
 
@@ -32,7 +33,7 @@ public class IncomeController {
 
     @Operation(summary = "Edit your income details")
     @PutMapping("/{id}")
-    public IncomeResponseDto updateIncome(@PathVariable Long id, @RequestBody IncomeRequestDto requestDto) {
+    public IncomeResponseDto updateIncome(@Valid @PathVariable Long id, @RequestBody IncomeRequestDto requestDto) {
         return incomeService.updateIncome(id, requestDto);
     }
 

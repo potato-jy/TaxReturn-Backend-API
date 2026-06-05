@@ -66,10 +66,6 @@ public class ExpenseService {
             dynamicTaxRate = 0.45; // 45%
         }
 
-        log.debug("====== [TAX CALCULATOR DEBUG] ======");
-        log.debug("현재까지 집계된 총 소득(Total Income): ${}", totalIncome);
-        log.debug("소득 구간에 따라 책정된 동적 세율(Tax Rate): {}%", dynamicTaxRate * 100);
-
         double totalDeduction = expenseRepository.findAll().stream()
                 .mapToDouble(expense -> {
                     double amount = expense.getAmount();
@@ -84,10 +80,6 @@ public class ExpenseService {
                 .sum();
 
         double finalRefund = totalDeduction * dynamicTaxRate;
-
-        log.debug("총 공제 인정 금액(Total Deduction): ${}", totalDeduction);
-        log.debug("최종 예상 환급액(Final Refund): ${}", finalRefund);
-        log.debug("====================================");
 
         return finalRefund;
     }
