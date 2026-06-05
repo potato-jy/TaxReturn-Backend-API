@@ -4,6 +4,7 @@ import com.global.taxreturnbackendapi.DTO.ExpenseRequestDto;
 import com.global.taxreturnbackendapi.DTO.ExpenseResponseDto;
 import com.global.taxreturnbackendapi.entity.Expense;
 import com.global.taxreturnbackendapi.repository.ExpenseRepository;
+import com.global.taxreturnbackendapi.repository.IncomeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,8 @@ import java.util.stream.Collectors;
 public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
+
+    private final IncomeRepository incomeRepository;
 
     public ExpenseResponseDto saveExpense(ExpenseRequestDto expenseRequestDto) {
 
@@ -45,30 +48,48 @@ public class ExpenseService {
     }
 
     /**
-     * Calculation of estimated tax refund applying category-specific deduction rates
-     * (amount spent * Deduction rate by category) * basic tax rate(30%)
+     * Calculation of refund amount based on dynamic tax rates according to total income brackets
+     *
      */
     public Double calculateExpectedRefund() {
-        double baseTaxRate = 0.30; // Assuming an average Australian tax rate of 30%
+
+        double totalIncome = incomeRepository.findAll().stream()
+                .mapToDouble(com.global.taxreturnbackendapi.entity.Income::getAmount)
+                .sum();
+
+        double dynamicTaxRate;
+        if (totalIncome <= 50000) {
+            dynamicTaxRate = 0.15; // 15%
+        } else if (totalIncome <= 100000) {
+            dynamicTaxRate = 0.30; // 30%
+        } else {
+            dynamicTaxRate = 0.45; // 45%
+        }
+
+        log.debug("====== [TAX CALCULATOR DEBUG] ======");
+        log.debug("현재까지 집계된 총 소득(Total Income): ${}", totalIncome);
+        log.debug("소득 구간에 따라 책정된 동적 세율(Tax Rate): {}%", dynamicTaxRate * 100);
 
         double totalDeduction = expenseRepository.findAll().stream()
                 .mapToDouble(expense -> {
                     double amount = expense.getAmount();
                     String category = expense.getCategory().toUpperCase();
-                    log.debug("현재 도는 데이터 카테고리: {}", expense.getCategory());
                     switch (category) {
-                        case "WORK":
-                            return amount * 1.0;  // 100%
-                        case "TRAVEL":
-                            return amount * 0.8;  // 80%
-                        case "EDUCATION":
-                            return amount * 0.7;  // 70%
-                        default:
-                            return amount * 0.5;  // 50%
+                        case "WORK":      return amount * 1.0;
+                        case "TRAVEL":    return amount * 0.8;
+                        case "EDUCATION": return amount * 0.7;
+                        default:          return amount * 0.5;
                     }
                 })
                 .sum();
-        return totalDeduction * baseTaxRate;
+
+        double finalRefund = totalDeduction * dynamicTaxRate;
+
+        log.debug("총 공제 인정 금액(Total Deduction): ${}", totalDeduction);
+        log.debug("최종 예상 환급액(Final Refund): ${}", finalRefund);
+        log.debug("====================================");
+
+        return finalRefund;
     }
 
     private ExpenseResponseDto getExpenseResponseDto(Expense expense) {
