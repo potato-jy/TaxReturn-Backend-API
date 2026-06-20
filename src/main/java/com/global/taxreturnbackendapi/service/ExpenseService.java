@@ -34,10 +34,24 @@ public class ExpenseService {
         return getExpenseResponseDto(savedExpense);
     }
 
-    public List<ExpenseResponseDto> getAllExpenses() {
+    public List<ExpenseResponseDto> getAllExpenses(String category) {
 
-        return expenseRepository.findAll().stream()
-                .map(this::getExpenseResponseDto)
+        List<Expense> expenses;
+
+        if (category != null && !category.trim().isEmpty()) {
+            expenses = expenseRepository.findByCategoryOrderByDateDesc(category);
+        } else {
+            expenses = expenseRepository.findAllByOrderByDateDesc();
+        }
+
+        return expenses.stream()
+                .map(expense -> ExpenseResponseDto.builder()
+                        .id(expense.getId())
+                        .amount(expense.getAmount())
+                        .date(expense.getDate())
+                        .category(expense.getCategory())
+                        .description(expense.getDescription())
+                        .build())
                 .collect(Collectors.toList());
     }
 

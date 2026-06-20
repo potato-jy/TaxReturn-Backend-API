@@ -27,8 +27,8 @@ public class ExpenseController {
 
     @Operation(summary = "view all expenditure details", description = "Retrieves saved all expense lists")
     @GetMapping
-    public List<ExpenseResponseDto> getAllExpenses() {
-        return expenseService.getAllExpenses();
+    public List<ExpenseResponseDto> getAllExpenses(@RequestParam(required = false) String category) {
+        return expenseService.getAllExpenses(category);
     }
 
     @Operation(summary = "view total expense sum", description = "return the sum of all expense saved")
